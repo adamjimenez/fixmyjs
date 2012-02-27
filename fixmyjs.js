@@ -607,13 +607,9 @@
           return false;
         }
         dupes[err] = v;
-        
-        v.fixable = errors.hasOwnProperty(v.raw);
 
-        if (v.fixable) {
+        if (errors.hasOwnProperty(v.raw)) {
           results.push(v);
-          var r = copyResults(v, config);          
-          v.fix=errors[v.raw].fix(r, code);
         }
 
         allErrors.push(v);
@@ -692,8 +688,22 @@
 
 // runs through all errors and fixes them.
 // returns the fixed code.
-        run: function () {
-          return code.getCode();
+        run: function (returnErrors) {
+          if (returnErrors){
+            allErrors.forEach(function (v) {
+              v.fixable = errors.hasOwnProperty(v.raw);
+        
+              if (v.fixable) {
+                var r = copyResults(v, config);          
+                v.fix=errors[v.raw].fix(r, code);
+              }
+            });
+              
+            return allErrors;
+          }else{
+            results.forEach(fixErrors(code, config));
+            return code.getCode();
+          }
         }
       };
 
