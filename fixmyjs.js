@@ -596,7 +596,7 @@
 // Then we check for duplicate errors. Sometimes JSHint will complain
 // about the same thing twice. This is a safeguard.
 // Otherwise we return true if we support this error.
-      allErrors = warnings.filter(function (v) {
+      warnings.forEach(function (v) {
         if (!v) {
           return false;
         }
@@ -607,25 +607,20 @@
           return false;
         }
         dupes[err] = v;
+        
+        v.fixable = errors.hasOwnProperty(v.raw);
 
-        if (errors.hasOwnProperty(v.raw)) {
+        if (v.fixable) {
           results.push(v);
+          var r = copyResults(v, config);          
+          v.fix=errors[v.raw].fix(r, code);
         }
 
-        return true;
+        allErrors.push(v);
       });
 
-      // sorts errors by priority.
+// sorts errors by priority.
       results.sort(byPriority);
-      
-      allErrors.forEach(function (key) {
-          key.fixable = errors.hasOwnProperty(key.raw);
-          
-          if (key.fixable) {
-              var r = copyResults(key, config);          
-              key.fix=errors[key.raw].fix(r, code);
-          }
-      });
 
 
 // fixMyJS API
@@ -698,7 +693,6 @@
 // runs through all errors and fixes them.
 // returns the fixed code.
         run: function () {
-          results.forEach(fixErrors(code, config));
           return code.getCode();
         }
       };
